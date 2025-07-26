@@ -288,7 +288,7 @@
                                         <div class="accordion-content px-4 pb-4"><p class="text-slate-600">A predicate that matches join points. Advice is associated with a pointcut expression and runs at any join point matched by the pointcut.</p></div>
                                     </div>
                                     <div class="accordion-item border border-slate-200 rounded-lg">
-                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Practical Example: @Transactional<span class="text-xl">+</span></button>
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Practical Example: <code>@Transactional</code><span class="text-xl">+</span></button>
                                         <div class="accordion-content px-4 pb-4"><p class="text-slate-600">The <code>@Transactional</code> annotation is a perfect example of AOP. When you apply it, Spring creates a proxy that wraps your method. This proxy starts a transaction before your method runs and commits/rolls it back after, keeping your business code clean of transaction management logic.</p></div>
                                     </div>
                                 </div>
@@ -314,12 +314,12 @@
                                 <h3 class="text-xl font-semibold text-blue-600 mt-6">Spring Boot Application Startup Flow</h3>
                                 <p class="mt-2 text-slate-600">A Spring Boot application starts with <code>SpringApplication.run()</code>, which bootstraps the entire application. Key steps include:</p>
                                 <ul class="list-disc list-inside text-slate-600 mt-4 space-y-2">
-                                    <li>`main` method invokes `SpringApplication.run()`.</li>
-                                    <li>IoC container searches for `@Configuration` classes.</li>
+                                    <li><code>main</code> method invokes <code>SpringApplication.run()</code>.</li>
+                                    <li>IoC container searches for <code>@Configuration</code> classes.</li>
                                     <li>Classpath scanning for beans, initialization, and storage in IoC Container.</li>
-                                    <li>Auto-configuration triggered by `@EnableAutoConfiguration` (part of `@SpringBootApplication`).</li>
-                                    <li>`@SpringBootApplication` combines `@Configuration`, `@EnableAutoConfiguration`, `@ComponentScan`.</li>
-                                    <li>Application ready to handle requests (e.g., `DispatcherServlet` in web apps).</li>
+                                    <li>Auto-configuration triggered by <code>@EnableAutoConfiguration</code> (part of <code>@SpringBootApplication</code>).</li>
+                                    <li><code>@SpringBootApplication</code> combines <code>@Configuration</code>, <code>@EnableAutoConfiguration</code>, <code>@ComponentScan</code>.</li>
+                                    <li>Application ready to handle requests (e.g., <code>DispatcherServlet</code> in web apps).</li>
                                 </ul>
                                 <p class="mt-4 text-slate-600">The internal workings follow a layered architecture: Presentation, Business (Service), Persistence, Database.</p>
                             </div>
@@ -404,14 +404,14 @@
                             <div class="content-card p-6">
                                 <h3 class="text-xl font-semibold text-blue-600">Common Pitfalls and Troubleshooting Tips (Core)</h3>
                                 <ul class="list-disc list-inside text-slate-600 space-y-2 mt-4">
-                                    <li><strong>Incorrect Configuration:</strong> Meticulously review \`pom.xml\` and property files. Use Spring Actuator.</li>
+                                    <li><strong>Incorrect Configuration:</strong> Meticulously review <code>pom.xml</code> and property files. Use Spring Actuator.</li>
                                     <li><strong>Inefficient DI Usage:</strong> Embrace DI for loose coupling. Prioritize constructor injection.</li>
-                                    <li><strong>Mishandling Exceptions:</strong> Implement robust exception handling. Use \`@ControllerAdvice\` for web apps.</li>
+                                    <li><strong>Mishandling Exceptions:</strong> Implement robust exception handling. Use <code>@ControllerAdvice</code> for web apps.</li>
                                     <li><strong>Version Conflicts:</strong> Regularly review dependency management.</li>
                                     <li><strong>Lack of Separation of Concerns:</strong> Adhere to layered architecture.</li>
-                                    <li><strong>Autowiring Problems:</strong> Ensure \`@ComponentScan\` is correct. Use \`@Qualifier\` or \`@Primary\`.</li>
+                                    <li><strong>Autowiring Problems:</strong> Ensure <code>@ComponentScan</code> is correct. Use <code>@Qualifier</code> or <code>@Primary</code>.</li>
                                     <li><strong>Duplicate Code:</strong> Leverage Spring features (DI, IoC, AOP) for reusability.</li>
-                                    <li><strong>Slow Startup Times:</strong> Optimize \`@ComponentScan\` base packages, streamline bean configs. Use DevTools.</li>
+                                    <li><strong>Slow Startup Times:</strong> Optimize <code>@ComponentScan</code> base packages, streamline bean configs. Use DevTools.</li>
                                     <li><strong>Memory Leaks:</strong> Proper object lifecycle management. Tune cache sizes.</li>
                                 </ul>
                                 <p class="mt-4 text-slate-600">Proactive troubleshooting with logging, debugging, and monitoring is indispensable.</p>
@@ -718,11 +718,11 @@
                                 <div class="mt-4 space-y-4">
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>Pageable</code> Object</h4>
-                                        <p class="text-sm text-slate-500">Passed to repository methods (e.g., <code>PageRequest.of(pageNumber, pageSize, Sort.by("propertyName"))</code>). Encapsulates page number, size, and sorting.</p>
+                                        <p class="text-sm text-slate-500">Passed to repository methods (e.g., <code>PageRequest.of(pageNumber, pageSize, Sort.by("propertyName").descending())</code>). Encapsulates page number, size, and sorting.</p>
                                     </div>
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>Page</code> Object</h4>
-                                        <p class="text-sm text-slate-500">Returned by repository methods (e.g., <code>Page<User></code>). Provides content, current page number, total pages, total elements.</p>
+                                        <p class="text-sm text-slate-500">Returned by repository methods (e.g., <code>Page&lt;User&gt;</code>). Provides content, current page number, total pages, total elements.</p>
                                     </div>
                                 </div>
                                 <h4 class="font-semibold text-lg mt-4">Benefits:</h4>
@@ -773,8 +773,8 @@
                                         <ul class="list-disc list-inside text-slate-600 ml-4 mt-2">
                                             <li><code>@CreatedDate</code>: Populates creation timestamp.</li>
                                             <li><code>@LastModifiedDate</code>: Updates timestamp on modification.</li>
-                                            <li><code>@CreatedBy</code>: Populates user who created (requires \`AuditorAware\` bean).</li>
-                                            <li><code>@LastModifiedBy</code>: Populates user who last modified (requires \`AuditorAware\` bean).</li>
+                                            <li><code>@CreatedBy</code>: Populates user who created (requires <code>AuditorAware</code> bean).</li>
+                                            <li><code>@LastModifiedBy</code>: Populates user who last modified (requires <code>AuditorAware</code> bean).</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -832,10 +832,10 @@
                             <div class="content-card p-6">
                                 <h3 class="text-xl font-semibold text-blue-600">Common Pitfalls and Troubleshooting Tips (JPA)</h3>
                                 <ul class="list-disc list-inside text-slate-600 space-y-2 mt-4">
-                                    <li><strong>N+1 Query Problem:</strong> Monitor SQL logs. Use \`JOIN FETCH\`, \`@EntityGraph\`, \`@BatchSize\`.</li>
-                                    <li><strong>Misuse of Eager Fetching:</strong> Favor \`FetchType.LAZY\`. Use explicit fetching only when needed.</li>
-                                    <li><strong>Incorrect Primary Key Strategy:</strong> Choose \`GenerationType\` based on database and scaling needs.</li>
-                                    <li><strong>Unnecessary \`saveAndFlush()\`:\` Understand JPA's auto-flush. Avoid unless immediate sync is required.</li>
+                                    <li><strong>N+1 Query Problem:</strong> Monitor SQL logs. Use <code>JOIN FETCH</code>, <code>@EntityGraph</code>, <code>@BatchSize</code>.</li>
+                                    <li><strong>Misuse of Eager Fetching:</strong> Favor <code>FetchType.LAZY</code>. Use explicit fetching only when needed.</li>
+                                    <li><strong>Incorrect Primary Key Strategy:</strong> Choose <code>GenerationType</code> based on database and scaling needs.</li>
+                                    <li><strong>Unnecessary <code>saveAndFlush()</code>:</strong> Understand JPA's auto-flush. Avoid unless immediate sync is required.</li>
                                     <li><strong>Lack of Caching:</strong> Implement Spring Cache. Tune cache sizes.</li>
                                     <li><strong>Inefficient Custom Queries:</strong> Write precise queries. Use DTO projections.</li>
                                 </ul>
@@ -876,8 +876,8 @@
                                 <h3 class="text-xl font-semibold text-blue-600">Spring Security Architecture</h3>
                                 <p class="mt-2 text-slate-600">Operates primarily through a sophisticated filter chain, intercepting HTTP requests before they reach application logic.</p>
                                 <h4 class="font-semibold text-lg mt-4">Filter Chain:</h4>
-                                <p class="mt-2 text-slate-600">Requests pass through a series of security filters. Each filter performs a specific security check (e.g., \`AuthenticationFilter\`, \`CsrfFilter\`). If all checks pass, request proceeds to controller; otherwise, it's halted.</p>
-                                <p class="mt-2 text-slate-600">The \`FilterChainProxy$VirtualFilterChain\` manages filter execution order. Highly customizable via \`HttpSecurity\`.</p>
+                                <p class="mt-2 text-slate-600">Requests pass through a series of security filters. Each filter performs a specific security check (e.g., <code>AuthenticationFilter</code>, <code>CsrfFilter</code>). If all checks pass, request proceeds to controller; otherwise, it's halted.</p>
+                                <p class="mt-2 text-slate-600">The <code>FilterChainProxy$VirtualFilterChain</code> manages filter execution order. Highly customizable via <code>HttpSecurity</code>.</p>
                                 <p class="mt-4 text-slate-600">This modular, layered approach ensures consistent and centralized handling of security concerns.</p>
                             </div>
                         `
@@ -891,11 +891,11 @@
                                 <div class="mt-4 space-y-4">
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>AuthenticationManager</code></h4>
-                                        <p class="text-sm text-slate-500">Orchestrates authentication, delegates to \`AuthenticationProvider\`s.</p>
+                                        <p class="text-sm text-slate-500">Orchestrates authentication, delegates to <code>AuthenticationProvider</code>s.</p>
                                     </div>
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>AuthenticationProvider</code></h4>
-                                        <p class="text-sm text-slate-500">Contains core logic for authenticating against a specific data source (e.g., \`DaoAuthenticationProvider\`).</p>
+                                        <p class="text-sm text-slate-500">Contains core logic for authenticating against a specific data source (e.g., <code>DaoAuthenticationProvider</code>).</p>
                                     </div>
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>UserDetailsService</code></h4>
@@ -907,7 +907,7 @@
                                     </div>
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>SecurityContext</code></h4>
-                                        <p class="text-sm text-slate-500">Stores the \`Authentication\` object (authenticated user's details) in a thread-local, managed by \`SecurityContextHolder\`.</p>
+                                        <p class="text-sm text-slate-500">Stores the <code>Authentication</code> object (authenticated user's details) in a thread-local, managed by <code>SecurityContextHolder</code>.</p>
                                     </div>
                                 </div>
                                 <p class="mt-4 text-slate-600">Pliable nature allows significant customization for diverse requirements.</p>
@@ -923,8 +923,8 @@
                                 <h4 class="font-semibold text-lg mt-4">Process:</h4>
                                 <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-2">
                                     <li>Create a custom HTML/JSP login page.</li>
-                                    <li>Configure Spring Security to point to the custom login page (e.g., \`.formLogin().loginPage("/custom-login")\`).</li>
-                                    <li>Custom form's \`action\` points to Spring Security's default login processing URL (e.g., \`/login\`).</li>
+                                    <li>Configure Spring Security to point to the custom login page (e.g., <code>.formLogin().loginPage("/custom-login")</code>).</li>
+                                    <li>Custom form's <code>action</code> points to Spring Security's default login processing URL (e.g., <code>/login</code>).</li>
                                     <li>Integrate with Spring MVC controller to render the custom login page if it's a JSP.</li>
                                 </ol>
                                 <p class="mt-4 text-slate-600">Balances convenient defaults with extensive flexibility for UI/UX.</p>
@@ -942,9 +942,9 @@
                                     <li>User authenticates with application.</li>
                                     <li>Server generates a signed JWT with claims.</li>
                                     <li>JWT sent to client.</li>
-                                    <li>Client includes JWT in \`Authorization\` header for subsequent requests.</li>
+                                    <li>Client includes JWT in <code>Authorization</code> header for subsequent requests.</li>
                                     <li>Server validates JWT signature and expiration.</li>
-                                    <li>If valid, user details from token populate \`SecurityContext\`.</li>
+                                    <li>If valid, user details from token populate <code>SecurityContext</code>.</li>
                                 </ol>
                                 <p class="mt-4 text-slate-600">Improves scalability and resilience in distributed architectures.</p>
                             </div>
@@ -983,7 +983,7 @@
                                 <div class="mt-4 space-y-4">
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>@PreAuthorize</code></h4>
-                                        <p class="text-sm text-slate-500">Evaluates SpEL *before* method invocation. If \`false\`, \`AccessDeniedException\` is thrown. Highly flexible (e.g., \`hasRole('ADMIN')\`, \`hasPermission(#id, 'read')\`).</p>
+                                        <p class="text-sm text-slate-500">Evaluates SpEL *before* method invocation. If <code>false</code>, <code>AccessDeniedException</code> is thrown. Highly flexible (e.g., <code>hasRole('ADMIN')</code>, <code>hasPermission(#id, 'read')</code>).</p>
                                     </div>
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h4 class="font-bold text-lg"><code>@PostAuthorize</code></h4>
@@ -1002,10 +1002,10 @@
                                 <p class="mt-2 text-slate-600">Protects against malicious websites tricking browsers into submitting unintended requests to trusted sites. Enabled by default for "unsafe" HTTP methods (POST, PUT, DELETE).</p>
                                 <h4 class="font-semibold text-lg mt-4">Mechanism:</h4>
                                 <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-2">
-                                    <li>Spring generates a unique \`CsrfToken\` for each user session.</li>
-                                    <li>Client includes this \`CsrfToken\` in requests (hidden form field or custom HTTP header like \`X-XSRF-TOKEN\`).</li>
+                                    <li>Spring generates a unique <code>CsrfToken</code> for each user session.</li>
+                                    <li>Client includes this <code>CsrfToken</code> in requests (hidden form field or custom HTTP header like <code>X-XSRF-TOKEN</code>).</li>
                                     <li>Spring Security's CSRF filter compares client token with stored token.</li>
-                                    <li>If tokens don't match, request is rejected with \`AccessDeniedException\`.</li>
+                                    <li>If tokens don't match, request is rejected with <code>AccessDeniedException</code>.</li>
                                 </ol>
                                 <p class="mt-4 text-slate-600">Proactively mitigates a common web vulnerability, aligning with secure-by-default configurations.</p>
                             </div>
@@ -1020,8 +1020,8 @@
                                     <li><strong>"Bad Credentials" Error:</strong> Review debug logs, verify password encoding.</li>
                                     <li><strong>"Endless Loop" on Login:</strong> Check security filter config, redirect URLs, session management.</li>
                                     <li><strong>"Access is denied" / 403 Forbidden:</strong> Verify authentication/authorization. For POST/PUT/DELETE, check CSRF token.</li>
-                                    <li><strong>\`Authentication\` object \`null\`:</strong> Ensure authentication success, session validity, \`SecurityContext\` population.</li>
-                                    <li><strong>Overly Permissive Endpoints:</strong> Review \`@PermitAll\` and broad URL patterns. Apply "least privilege."</li>
+                                    <li><strong><code>Authentication</code> object <code>null</code>:</strong> Ensure authentication success, session validity, <code>SecurityContext</code> population.</li>
+                                    <li><strong>Overly Permissive Endpoints:</strong> Review <code>@PermitAll</code> and broad URL patterns. Apply "least privilege."</li>
                                     <li><strong>Inconsistent Role/Permission Checks:</strong> Apply authorization consistently across layers.</li>
                                     <li><strong>Unvalidated Client-Side Tokens/Roles:</strong> Always validate JWT signature and claims on server-side.</li>
                                 </ul>
@@ -1056,11 +1056,11 @@
                                 <div class="mt-4 space-y-4">
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h5 class="font-bold text-md"><code>@MockBean</code></h5>
-                                        <p class="text-sm text-slate-500">Creates a Mockito mock and replaces a real bean in the Spring context. Ideal for complete isolation. Uses \`REPLACE_OR_CREATE\` strategy.</p>
+                                        <p class="text-sm text-slate-500">Creates a Mockito mock and replaces a real bean in the Spring context. Ideal for complete isolation. Uses <code>REPLACE_OR_CREATE</code> strategy.</p>
                                     </div>
                                     <div class="border border-slate-200 p-4 rounded-lg">
                                         <h5 class="font-bold text-md"><code>@SpyBean</code></h5>
-                                        <p class="text-sm text-slate-500">Creates a Mockito spy of an *existing* bean. Retains original behavior but allows specific methods to be stubbed/verified. Uses \`WRAP\` strategy.</p>
+                                        <p class="text-sm text-slate-500">Creates a Mockito spy of an *existing* bean. Retains original behavior but allows specific methods to be stubbed/verified. Uses <code>WRAP</code> strategy.</p>
                                     </div>
                                 </div>
                                 <p class="mt-4 text-slate-600"><strong>Best Practices:</strong> Isolate functionality, write readable tests, test edge cases, use constructor injection, avoid testing framework code.</p>
@@ -1092,7 +1092,7 @@
                                     <li><strong>Testcontainers:</strong> Provides reliable, ephemeral instances of all external dependencies.</li>
                                     <li><strong>Cucumber/Gherkin:</strong> For Behavior-Driven Development (BDD), defining scenarios in human-readable format.</li>
                                 </ul>
-                                <p class="mt-4 text-slate-600">Catches integration issues and user-flow problems missed by lower-level tests. \`@SpringBootTest\` is often the starting point.</p>
+                                <p class="mt-4 text-slate-600">Catches integration issues and user-flow problems missed by lower-level tests. <code>@SpringBootTest</code> is often the starting point.</p>
                             </div>
                         `
                     },
@@ -1101,14 +1101,14 @@
                         content: `
                             <div class="content-card p-6">
                                 <h3 class="text-xl font-semibold text-blue-600">Underlying Testing Infrastructure</h3>
-                                <p class="mt-2 text-slate-600">Core component (\`org.springframework.test.context\`) providing generic, annotation-driven unit and integration testing support. Agnostic of specific testing frameworks (JUnit, TestNG).</p>
+                                <p class="mt-2 text-slate-600">Core component (<code>org.springframework.test.context</code>) providing generic, annotation-driven unit and integration testing support. Agnostic of specific testing frameworks (JUnit, TestNG).</p>
                                 <h4 class="font-semibold text-lg mt-4">Key Functionalities:</h4>
                                 <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
-                                    <li><strong>Context Management:</strong> Loads and caches Spring \`ApplicationContext\` for tests.</li>
+                                    <li><strong>Context Management:</strong> Loads and caches Spring <code>ApplicationContext</code> for tests.</li>
                                     <li><strong>Dependency Injection:</strong> Automatically injects dependencies into test classes.</li>
                                     <li><strong>Transaction Management:</strong> Supports transactional tests, automatic rollback after each test.</li>
                                     <li><strong>Executing SQL Scripts:</strong> Can set up/clean up test data.</li>
-                                    <li><strong>POJO Test Classes:</strong> Enables writing tests without extending specific Spring base classes (uses \`@ExtendWith(SpringExtension.class)\`).</li>
+                                    <li><strong>POJO Test Classes:</strong> Enables writing tests without extending specific Spring base classes (uses <code>@ExtendWith(SpringExtension.class)</code>).</li>
                                 </ul>
                                 <p class="mt-4 text-slate-600">Powers Spring Boot testing annotations, providing a robust foundation for efficient and reliable testing.</p>
                             </div>
@@ -1122,9 +1122,9 @@
                                 <h4 class="font-semibold text-lg mt-4">Best Practices:</h4>
                                 <ul class="list-disc list-inside text-slate-600 space-y-2 mt-2">
                                     <li><strong>Keep Tests Isolated (FIRST):</strong> Fast, Independent, Repeatable, Self-Validating, Timely.</li>
-                                    <li><strong>Isolate Functionality:</strong> Use context slicing (\`@WebMvcTest\`, \`@DataJpaTest\`).</li>
+                                    <li><strong>Isolate Functionality:</strong> Use context slicing (<code>@WebMvcTest</code>, <code>@DataJpaTest</code>).</li>
                                     <li><strong>Use Real DBs with Testcontainers:</strong> For "dev-prod parity."</li>
-                                    <li><strong>Mock External Dependencies:</strong> Use Mockito (\`@MockBean\`, \`@SpyBean\`).</li>
+                                    <li><strong>Mock External Dependencies:</strong> Use Mockito (<code>@MockBean</code>, <code>@SpyBean</code>).</li>
                                     <li><strong>Write Readable Tests:</strong> Clear, concise, easy to debug/update.</li>
                                     <li><strong>Test Edge Cases:</strong> Cover boundary conditions, invalid inputs, error paths.</li>
                                     <li><strong>Integrate into CI/CD:</strong> Automated execution to prevent regressions.</li>
@@ -1132,8 +1132,8 @@
                                 </ul>
                                 <h4 class="font-semibold text-lg mt-4">Common Pitfalls:</h4>
                                 <ul class="list-disc list-inside text-slate-600 space-y-2 mt-2">
-                                    <li><strong>Over-reliance on \`@SpringBootTest\`:</strong> Leads to slow suites.</li>
-                                    <li><strong>Inconsistent DB State:</strong> Use \`@Transactional\` or explicit cleanup.</li>
+                                    <li><strong>Over-reliance on <code>@SpringBootTest</code>:</strong> Leads to slow suites.</li>
+                                    <li><strong>Inconsistent DB State:</strong> Use <code>@Transactional</code> or explicit cleanup.</li>
                                     <li><strong>Not Mocking External Systems:</strong> Makes tests slow, flaky.</li>
                                     <li><strong>Testing Trivial Logic:</strong> Adds overhead without value.</li>
                                     <li><strong>Circular Dependencies:</strong> Can complicate testing.</li>
