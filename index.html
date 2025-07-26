@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Spring Interview Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Calm Harmony" - A palette grounded in warm neutrals (slate, stone) with a supportive blue accent for focus and interaction. -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard. A top navigation bar allows users to select one of the five main Spring topics (Core, MVC, etc.). Selecting a topic reveals a secondary sidebar navigation for its sub-sections (e.g., IoC, AOP). This two-level navigation prevents overwhelming the user with a single, long page. The main content area dynamically displays information using interactive cards, diagrams, and charts. This structure was chosen to break down dense information into manageable, explorable chunks, promoting active learning over passive reading and making it easy to jump to specific topics. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core Concepts (IoC/DI). Goal: Inform/Compare. Viz: Cards and a Bar Chart (BeanFactory vs AppContext features). Interaction: Click chart bars for details. Justification: Visual comparison is faster than reading text. Library: Chart.js.
+        - Report Info: DispatcherServlet Flow. Goal: Explain a process. Viz: HTML/CSS step-by-step diagram. Interaction: Click steps to reveal details. Justification: Interactive flow is more engaging and memorable than a static list. Library: Vanilla JS.
+        - Report Info: N+1 Problem. Goal: Explain problem/solutions. Viz: Tabbed content area. Interaction: Click tabs for each solution. Justification: Organizes complex solutions cleanly. Library: Vanilla JS.
+        - Report Info: Testing Annotations. Goal: Compare. Viz: Horizontal Bar Chart (Context Load/Speed). Interaction: Hover for tooltips. Justification: Visualizes abstract trade-offs. Library: Chart.js.
+        - All textual content is broken into cards or accordions to improve readability and reduce cognitive load.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .main-nav-btn {
+            transition: all 0.3s ease;
+        }
+        .main-nav-btn.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .sub-nav-btn {
+            transition: all 0.2s ease;
+        }
+        .sub-nav-btn.active {
+            background-color: #e0e7ff; /* indigo-100 */
+            color: #3730a3; /* indigo-800 */
+            font-weight: 600;
+        }
+        .content-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .hidden {
+            display: none;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #475569; /* slate-600 */
+            background-color: #f1f5f9; /* slate-100 */
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .flow-step {
+            background-color: #e0e7ff; /* indigo-100 */
+            border-radius: 0.75rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            position: relative;
+        }
+        .flow-step:hover {
+            background-color: #c7d2fe; /* indigo-200 */
+            transform: translateY(-2px);
+        }
+        .flow-step-detail {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            background-color: white;
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+            padding: 0 1rem;
+        }
+        .flow-step-detail.active {
+            max-height: 200px; /* Adjust as needed */
+            padding: 1rem;
+        }
+        .flow-arrow {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #64748b; /* slate-500 */
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Interactive Spring Interview Guide</h1>
+            <p class="text-slate-500 mt-1">An interactive dashboard to master core Spring concepts.</p>
+        </div>
+    </header>
+
+    <nav id="main-nav" class="bg-white border-b border-slate-200 py-3 sticky top-[88px] z-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-center gap-2 md:gap-4">
+                <button data-topic="core" class="main-nav-btn px-4 py-2 rounded-lg font-semibold text-slate-600 hover:bg-slate-200">Core</button>
+                <button data-topic="mvc" class="main-nav-btn px-4 py-2 rounded-lg font-semibold text-slate-600 hover:bg-slate-200">MVC</button>
+                <button data-topic="jpa" class="main-nav-btn px-4 py-2 rounded-lg font-semibold text-slate-600 hover:bg-slate-200">Data JPA</button>
+                <button data-topic="security" class="main-nav-btn px-4 py-2 rounded-lg font-semibold text-slate-600 hover:bg-slate-200">Security</button>
+                <button data-topic="testing" class="main-nav-btn px-4 py-2 rounded-lg font-semibold text-slate-600 hover:bg-slate-200">Testing</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <aside id="sub-nav-container" class="lg:w-1/4 xl:w-1/5">
+                <!-- Sub-navigation will be injected here -->
+            </aside>
+            <div id="content-container" class="flex-1 min-w-0">
+                <!-- Main content will be injected here -->
+                 <div id="welcome-message" class="text-center py-16">
+                    <h2 class="text-3xl font-bold text-slate-700">Welcome!</h2>
+                    <p class="mt-4 text-lg text-slate-500">Select a topic from the top navigation to begin your interactive learning journey.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 mt-8 border-t border-slate-200 bg-white">
+        <p class="text-slate-500">Created to make Spring Framework concepts accessible and engaging.</p>
+    </footer>
+
+    <script>
+        let iocChartInstance = null;
+        let testingChartInstance = null;
+
+        const contentData = {
+            core: {
+                title: 'Core Spring Fundamentals',
+                intro: 'This section establishes the foundational understanding of the Spring Framework, delving into its core principles and essential components. A strong grasp of these concepts is paramount, as they underpin nearly every other Spring module and feature.',
+                subsections: {
+                    ioc: {
+                        title: 'IoC & Dependency Injection',
+                        content: `
+                            <div class="space-y-6">
+                                <div class="content-card p-6">
+                                    <h3 class="text-xl font-semibold text-blue-600">Inversion of Control (IoC)</h3>
+                                    <p class="mt-2 text-slate-600">A design principle that shifts the responsibility of object creation and lifecycle management from your application code to the Spring framework. Instead of your objects creating their dependencies, the framework creates and "injects" them. This reduces coupling between components.</p>
+                                </div>
+                                <div class="content-card p-6">
+                                    <h3 class="text-xl font-semibold text-blue-600">Dependency Injection (DI)</h3>
+                                    <p class="mt-2 text-slate-600">The concrete pattern that implements IoC. Dependencies are provided to an object from an external source (the IoC Container) rather than being created internally. This makes code more modular, easier to test, and more maintainable.</p>
+                                </div>
+                                <div class="content-card p-6">
+                                    <h3 class="text-xl font-semibold text-blue-600">IoC Container Comparison</h3>
+                                    <p class="mt-2 text-slate-600">Spring provides two primary IoC containers. The <strong>ApplicationContext</strong> is the more advanced and feature-rich container, preferred for most enterprise applications. The chart below visualizes the key differences.</p>
+                                    <div class="chart-container mt-4"><canvas id="ioc-chart"></canvas></div>
+                                </div>
+                                <div class="content-card p-6">
+                                    <h3 class="text-xl font-semibold text-blue-600">Types of DI</h3>
+                                    <div class="mt-4 space-y-4">
+                                        <div class="accordion-item border border-slate-200 rounded-lg">
+                                            <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Constructor-Based Injection<span class="text-xl">+</span></button>
+                                            <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Dependencies are provided as arguments to the bean's constructor. Ensures all required dependencies are available at instantiation. Promotes immutability and testability.</p></div>
+                                        </div>
+                                        <div class="accordion-item border border-slate-200 rounded-lg">
+                                            <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Setter-Based Injection<span class="text-xl">+</span></button>
+                                            <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Dependencies are injected using public setter methods after instantiation. Often used for optional dependencies or reconfigurability.</p></div>
+                                        </div>
+                                        <div class="accordion-item border border-slate-200 rounded-lg">
+                                            <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Field-Based Injection<span class="text-xl">+</span></button>
+                                            <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Dependencies are injected directly into private fields using <code>@Autowired</code>. Convenient but can obscure dependencies and complicate testing outside Spring context.</p></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    scopes: {
+                        title: 'Bean Scopes',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Understanding Bean Scopes</h3>
+                                <p class="mt-2 text-slate-600">Bean scopes dictate how instances are created and shared. Choosing the right scope is crucial for resource management and application state.</p>
+                                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Singleton (Default)</h4>
+                                        <p class="text-sm text-slate-500">One single instance of the bean is created per Spring IoC container. Best for stateless services.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Prototype</h4>
+                                        <p class="text-sm text-slate-500">A new instance is created every time the bean is requested. Ideal for stateful beans.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Request (Web-aware)</h4>
+                                        <p class="text-sm text-slate-500">A new instance is created for each HTTP request. Useful for request-specific data.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Session (Web-aware)</h4>
+                                        <p class="text-sm text-slate-500">A new instance is created for each HTTP session. Perfect for user-specific data like a shopping cart.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    annotations: {
+                        title: 'Key Annotations',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Key Spring Annotations</h3>
+                                <p class="mt-2 text-slate-600">Spring's annotation-driven configuration simplifies bean definition and dependency injection, making code cleaner and more declarative.</p>
+                                <div class="mt-6 space-y-4">
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Stereotype Annotations<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4">
+                                            <ul class="list-disc list-inside text-slate-600 space-y-2">
+                                                <li><code>@Component</code>: Generic stereotype for any Spring-managed component.</li>
+                                                <li><code>@Service</code>: Indicates a class holding business logic.</li>
+                                                <li><code>@Repository</code>: Indicates a class performing data access. Enables exception translation.</li>
+                                                <li><code>@Controller</code>: Indicates a class handling web requests in Spring MVC.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Dependency Injection Annotations<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4">
+                                            <ul class="list-disc list-inside text-slate-600 space-y-2">
+                                                <li><code>@Autowired</code>: Automatic dependency injection.</li>
+                                                <li><code>@Value</code>: Injects values from property sources.</li>
+                                                <li><code>@Qualifier</code>: Resolves ambiguity when multiple beans of the same type are available.</li>
+                                                <li><code>@Primary</code>: Indicates a preferred bean when multiple candidates are available.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    aop: {
+                        title: 'Aspect-Oriented Programming',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">What is AOP?</h3>
+                                <p class="mt-2 text-slate-600">AOP complements Object-Oriented Programming (OOP) by providing a way to modularize <strong>cross-cutting concerns</strong>. These are concerns that affect multiple parts of an application, such as logging, security, and transaction management. AOP allows you to separate this logic from your core business logic.</p>
+                                <div class="mt-6 space-y-4">
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Aspect<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">A module that encapsulates a cross-cutting concern (e.g., a logging aspect).</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Join Point<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">A point during the execution of a program, such as the execution of a method. In Spring AOP, a join point is always the execution of a method.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Advice<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">The action taken by an aspect at a particular join point (e.g., logging before a method executes). Types include Before, After, Around, etc.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Pointcut<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">A predicate that matches join points. Advice is associated with a pointcut expression and runs at any join point matched by the pointcut.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Practical Example: @Transactional<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">The <code>@Transactional</code> annotation is a perfect example of AOP. When you apply it, Spring creates a proxy that wraps your method. This proxy starts a transaction before your method runs and commits/rolls it back after, keeping your business code clean of transaction management logic.</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    lifecycle: {
+                        title: 'Application Lifecycle',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Spring Bean Lifecycle</h3>
+                                <p class="mt-2 text-slate-600">The sequence of events from bean instantiation to destruction, managed by the Spring IoC container.</p>
+                                <ol class="list-decimal list-inside text-slate-600 mt-4 space-y-2">
+                                    <li>Container Initialization</li>
+                                    <li>Bean Instantiation</li>
+                                    <li>Dependency Injection</li>
+                                    <li>Initialization Callbacks (<code>@PostConstruct</code>, <code>InitializingBean</code>)</li>
+                                    <li>Bean Ready for Use</li>
+                                    <li>Bean Usage</li>
+                                    <li>Container Shutdown</li>
+                                    <li>Destruction Callbacks (<code>@PreDestroy</code>, <code>DisposableBean</code>)</li>
+                                </ol>
+                                <h3 class="text-xl font-semibold text-blue-600 mt-6">Spring Boot Application Startup Flow</h3>
+                                <p class="mt-2 text-slate-600">A Spring Boot application starts with <code>SpringApplication.run()</code>, which bootstraps the entire application. Key steps include:</p>
+                                <ul class="list-disc list-inside text-slate-600 mt-4 space-y-2">
+                                    <li>`main` method invokes `SpringApplication.run()`.</li>
+                                    <li>IoC container searches for `@Configuration` classes.</li>
+                                    <li>Classpath scanning for beans, initialization, and storage in IoC Container.</li>
+                                    <li>Auto-configuration triggered by `@EnableAutoConfiguration` (part of `@SpringBootApplication`).</li>
+                                    <li>`@SpringBootApplication` combines `@Configuration`, `@EnableAutoConfiguration`, `@ComponentScan`.</li>
+                                    <li>Application ready to handle requests (e.g., `DispatcherServlet` in web apps).</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">The internal workings follow a layered architecture: Presentation, Business (Service), Persistence, Database.</p>
+                            </div>
+                        `
+                    },
+                    profiles: {
+                        title: 'Spring Profiles',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Environment-Specific Configuration</h3>
+                                <p class="mt-2 text-slate-600">Spring Profiles allow managing environment-specific configurations (e.g., dev, test, prod) by conditionally loading properties and beans.</p>
+                                <h4 class="font-semibold text-lg mt-4">Activation Methods (Higher Priority First):</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li><code>web.xml</code> Context Parameter</li>
+                                    <li><code>WebApplicationInitializer</code> Interface</li>
+                                    <li>JVM System Parameter (e.g., <code>-Dspring.profiles.active=dev</code>)</li>
+                                    <li><code>application.properties</code> (<code>spring.profiles.active=dev</code>)</li>
+                                    <li><code>pom.xml</code> / <code>build.gradle</code></li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Profiles are crucial for "dev-prod parity," reducing deployment risks.</p>
+                            </div>
+                        `
+                    },
+                    events: {
+                        title: 'Event Handling',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Decoupled Communication</h3>
+                                <p class="mt-2 text-slate-600">Spring's event handling provides a loosely coupled communication mechanism, based on the Observer design pattern.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Event</h4>
+                                        <p class="text-sm text-slate-500">A significant occurrence (extends <code>ApplicationEvent</code>).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Publisher</h4>
+                                        <p class="text-sm text-slate-500">Broadcasts events (uses <code>ApplicationEventPublisher.publishEvent()</code>).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Listener</h4>
+                                        <p class="text-sm text-slate-500">Reacts to events (annotated with <code>@EventListener</code>).</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Benefits: Loose Coupling, Scalability, Flexibility. Valuable for event-driven architectures.</p>
+                            </div>
+                        `
+                    },
+                    patterns: {
+                        title: 'Design Patterns',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Common Design Patterns in Spring Core</h3>
+                                <p class="mt-2 text-slate-600">Spring is deeply rooted in established software design patterns that promote modularity, scalability, and maintainability.</p>
+                                <div class="mt-6 space-y-4">
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Dependency Injection (DI) Pattern<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Object receives dependencies from an external source. Spring's IoC container is built around this. Benefits: loose coupling, testability.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Singleton Pattern<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Ensures a class has only one instance and provides a global access point. Spring beans with <code>singleton</code> scope adhere to this. Benefits: resource optimization, consistency.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Factory Method Pattern<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Defines an interface for creating an object, allowing subclasses to decide which class to instantiate. Used by <code>FactoryBean</code> and <code>@Bean</code> methods. Benefits: centralizes object creation logic.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Proxy Pattern<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Provides a surrogate for another object to control access. Spring AOP uses this for method interception (e.g., <code>@Transactional</code>). Benefits: separation of cross-cutting concerns, dynamic behavior.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center">Template Method Pattern<span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Defines the skeleton of an algorithm, deferring some steps to subclasses. Used in Spring's "template" classes like <code>JdbcTemplate</code>, <code>RestTemplate</code>. Benefits: reduces boilerplate.</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    pitfalls: {
+                        title: 'Common Pitfalls & Tips',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Common Pitfalls and Troubleshooting Tips (Core)</h3>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2 mt-4">
+                                    <li><strong>Incorrect Configuration:</strong> Meticulously review \`pom.xml\` and property files. Use Spring Actuator.</li>
+                                    <li><strong>Inefficient DI Usage:</strong> Embrace DI for loose coupling. Prioritize constructor injection.</li>
+                                    <li><strong>Mishandling Exceptions:</strong> Implement robust exception handling. Use \`@ControllerAdvice\` for web apps.</li>
+                                    <li><strong>Version Conflicts:</strong> Regularly review dependency management.</li>
+                                    <li><strong>Lack of Separation of Concerns:</strong> Adhere to layered architecture.</li>
+                                    <li><strong>Autowiring Problems:</strong> Ensure \`@ComponentScan\` is correct. Use \`@Qualifier\` or \`@Primary\`.</li>
+                                    <li><strong>Duplicate Code:</strong> Leverage Spring features (DI, IoC, AOP) for reusability.</li>
+                                    <li><strong>Slow Startup Times:</strong> Optimize \`@ComponentScan\` base packages, streamline bean configs. Use DevTools.</li>
+                                    <li><strong>Memory Leaks:</strong> Proper object lifecycle management. Tune cache sizes.</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Proactive troubleshooting with logging, debugging, and monitoring is indispensable.</p>
+                            </div>
+                        `
+                    }
+                }
+            },
+            mvc: {
+                title: 'Spring MVC for Web Apps',
+                intro: 'Spring MVC is the dedicated module within the Spring Framework for building robust and scalable web applications. It implements the Model-View-Controller (MVC) architectural pattern, providing a structured approach to web development.',
+                subsections: {
+                    flow: {
+                        title: 'DispatcherServlet Flow',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Request Lifecycle in Spring MVC</h3>
+                                <p class="mt-2 text-slate-600">The <code>DispatcherServlet</code> acts as the "front controller" in Spring MVC, managing the entire request-response cycle. Understanding its flow is key to troubleshooting web issues. Click on each step to learn more.</p>
+                                <div class="mt-6 space-y-3">
+                                    <div class="flow-step" data-step="1">
+                                        <h4 class="font-bold text-lg text-indigo-800">1. Request Reception</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">An incoming HTTP request is first received by the <code>DispatcherServlet</code>, which acts as the single entry point for all web requests.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arrow"><span>&#8595;</span></div>
+                                    <div class="flow-step" data-step="2">
+                                        <h4 class="font-bold text-lg text-indigo-800">2. Handler Mapping</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">The <code>DispatcherServlet</code> consults configured Handler Mappings to identify the appropriate controller method that can handle the request based on URL, HTTP method, etc.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arrow"><span>&#8595;</span></div>
+                                    <div class="flow-step" data-step="3">
+                                        <h4 class="font-bold text-lg text-indigo-800">3. Handler Invocation</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">A Handler Adapter then invokes the identified controller method, adapting its interface to the <code>DispatcherServlet</code>'s needs.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arrow"><span>&#8595;</span></div>
+                                    <div class="flow-step" data-step="4">
+                                        <h4 class="font-bold text-lg text-indigo-800">4. Model and View Return</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">The controller processes the request, interacts with the model, and typically returns a <code>ModelAndView</code> object, containing data and a logical view name.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arrow"><span>&#8595;</span></div>
+                                    <div class="flow-step" data-step="5">
+                                        <h4 class="font-bold text-lg text-indigo-800">5. View Resolution</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">The <code>DispatcherServlet</code> uses the View Resolver to translate the logical view name into the actual view component (e.g., a JSP file).</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arrow"><span>&#8595;</span></div>
+                                    <div class="flow-step" data-step="6">
+                                        <h4 class="font-bold text-lg text-indigo-800">6. View Rendering</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">The selected view renders the model data, generating the final HTML response.</p>
+                                        </div>
+                                    </div>
+                                    <div class="flow-arrow"><span>&#8595;</span></div>
+                                    <div class="flow-step" data-step="7">
+                                        <h4 class="font-bold text-lg text-indigo-800">7. Response to Client</h4>
+                                        <div class="flow-step-detail">
+                                            <p class="text-slate-600">Finally, the <code>DispatcherServlet</code> dispatches the rendered response back to the client.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    annotations: {
+                        title: 'Web Annotations',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Key Annotations for Web Development</h3>
+                                <p class="mt-2 text-slate-600">Spring MVC leverages powerful annotations to simplify handling HTTP requests and responses.</p>
+                                <div class="mt-6 space-y-4">
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center"><code>@Controller</code><span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Marks a class as a Spring MVC controller, typically returning logical view names.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center"><code>@RequestMapping</code><span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Maps web requests to specific handler methods. Can be applied at class or method level.</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center"><code>@RestController</code><span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Composite of <code>@Controller</code> and <code>@ResponseBody</code>. Primarily for RESTful APIs, auto-binding return values to response body (e.g., JSON).</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center"><code>@ResponseBody</code><span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Indicates method return value should be directly bound to the HTTP response body (serialization).</p></div>
+                                    </div>
+                                    <div class="accordion-item border border-slate-200 rounded-lg">
+                                        <button class="accordion-header w-full text-left p-4 font-semibold flex justify-between items-center"><code>@RequestBody</code><span class="text-xl">+</span></button>
+                                        <div class="accordion-content px-4 pb-4"><p class="text-slate-600">Binds the HTTP request body to a method parameter (deserialization).</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    validation: {
+                        title: 'Form Handling & Validation',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Form Handling and Validation</h3>
+                                <p class="mt-2 text-slate-600">Ensuring user input is accurate and appropriate. Spring integrates with Java's Bean Validation API (JSR-380).</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>Validator</code> Interface</h4>
+                                        <p class="text-sm text-slate-500">For custom validation logic (<code>supports()</code>, <code>validate()</code> methods).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>BindingResult</code></h4>
+                                        <p class="text-sm text-slate-500">Holds outcome of data binding and validation. Used to check for errors (<code>hasErrors()</code>).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Annotation-Based Validation</h4>
+                                        <p class="text-sm text-slate-500">Using annotations like <code>@NotBlank</code>, <code>@Size</code>, <code>@Min</code> on POJO fields, triggered by <code>@Valid</code>.</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Integrated approach for data integrity and user experience.</p>
+                            </div>
+                        `
+                    },
+                    exception: {
+                        title: 'Global Exception Handling',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Centralized Error Management</h3>
+                                <p class="mt-2 text-slate-600">Ensures smooth user experience and prevents exposure of sensitive details. Uses <code>@ControllerAdvice</code> and <code>@ExceptionHandler</code>.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@ControllerAdvice</code></h4>
+                                        <p class="text-sm text-slate-500">Specialized annotation for global exception handling across all controllers. Intercepts exceptions and directs them to handler methods.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@ExceptionHandler</code></h4>
+                                        <p class="text-sm text-slate-500">Maps specific exception types to handler methods within a <code>@ControllerAdvice</code> class. Allows custom error responses (e.g., status codes, messages).</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Critical for production-ready applications, enhancing robustness and user experience.</p>
+                            </div>
+                        `
+                    },
+                    interceptors: {
+                        title: 'Spring Interceptors',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Intercepting Requests and Responses</h3>
+                                <p class="mt-2 text-slate-600">Spring Interceptors allow processing HTTP requests and responses at various stages of their lifecycle (before/after controller execution). Ideal for web-specific cross-cutting concerns.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>preHandle()</code></h4>
+                                        <p class="text-sm text-slate-500">Invoked *before* the handler method. Used for authentication, authorization, logging. Returns <code>true</code> to proceed, <code>false</code> to stop.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>postHandle()</code></h4>
+                                        <p class="text-sm text-slate-500">Called *after* handler method, *before* view rendering. Used to add model attributes or manipulate <code>ModelAndView</code>.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>afterCompletion()</code></h4>
+                                        <p class="text-sm text-slate-500">Invoked *after* complete request has finished, including view rendering. Used for resource cleanup, final logging, exception handling.</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Configured via <code>WebMvcConfigurer</code>. Provides fine-grained control over web-related concerns.</p>
+                            </div>
+                        `
+                    },
+                    pitfalls: {
+                        title: 'Common Pitfalls & Tips',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Common Pitfalls and Troubleshooting Tips (MVC)</h3>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2 mt-4">
+                                    <li><strong>High Complexity for Simple Apps:</strong> Consider simpler frameworks for minimal apps.</li>
+                                    <li><strong>Misconfigured <code>DispatcherServlet</code>:</strong> Verify servlet mappings and component scanning.</li>
+                                    <li><strong>Validation Issues:</strong> Always pair <code>@Valid</code> with <code>BindingResult</code>. Ensure validation dependencies.</li>
+                                    <li><strong>Inconsistent Exception Handling:</strong> Use <code>@ControllerAdvice</code> for global consistency.</li>
+                                    <li><strong>Interceptor Chain Issues:</strong> Ensure <code>filterChain.doFilter()</code> is called. Enable debug logging for Spring Security.</li>
+                                    <li><strong>Version Conflicts:</strong> Regularly review and update project dependencies.</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Strong debugging skills and understanding request flow are essential.</p>
+                            </div>
+                        `
+                    }
+                }
+            },
+            jpa: {
+                title: 'Spring Data JPA for Persistence',
+                intro: 'Spring Data JPA simplifies data access layer implementation by building upon the Java Persistence API (JPA) and abstracting away much of the boilerplate code for Object-Relational Mapping (ORM).',
+                subsections: {
+                    intro: {
+                        title: 'Intro to JPA & Spring Data JPA',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">JPA (Java Persistence API)</h3>
+                                <p class="mt-2 text-slate-600">A Java specification for Object-Relational Mapping (ORM), mapping POJOs to database tables. Works with ORM tools like Hibernate.</p>
+                                <h3 class="text-xl font-semibold text-blue-600 mt-4">ORM (Object-Relational Mapping)</h3>
+                                <p class="mt-2 text-slate-600">Technique converting data between object-oriented languages and relational databases.</p>
+                                <h3 class="text-xl font-semibold text-blue-600 mt-4">Spring Data JPA</h3>
+                                <p class="mt-2 text-slate-600">Integrates JPA with Spring. Simplifies data access via repository abstraction, reducing boilerplate.</p>
+                                <h4 class="font-semibold text-lg mt-4">Key Benefits:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li>Repository Abstraction (predefined CRUD interfaces)</li>
+                                    <li>Custom Queries (derived, JPQL, native SQL)</li>
+                                    <li>Pagination and Sorting</li>
+                                    <li>Auditing</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Boosts productivity, reduces errors, allows focus on business logic.</p>
+                            </div>
+                        `
+                    },
+                    entities: {
+                        title: 'Entities & Annotations',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Defining JPA Entities</h3>
+                                <p class="mt-2 text-slate-600">An entity is a POJO representing a database table. Key annotations:</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@Entity</code></h4>
+                                        <p class="text-sm text-slate-500">Marks a class as a JPA entity.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@Table</code></h4>
+                                        <p class="text-sm text-slate-500">Specifies database table name if different from class name.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@Id</code></h4>
+                                        <p class="text-sm text-slate-500">Marks the primary key field.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@GeneratedValue</code></h4>
+                                        <p class="text-sm text-slate-500">For auto-generated primary key values (e.g., <code>IDENTITY</code>, <code>SEQUENCE</code>).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@Column</code></h4>
+                                        <p class="text-sm text-slate-500">Explicitly maps field to column, or specifies attributes like <code>updatable=false</code>.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@MappedSuperclass</code></h4>
+                                        <p class="text-sm text-slate-500">For reusable base entity classes (e.g., for auditing fields).</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    repositories: {
+                        title: 'Repositories',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Spring Data JPA Repository Interfaces</h3>
+                                <p class="mt-2 text-slate-600">Provides powerful abstraction for data access, reducing boilerplate code.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>CrudRepository</code></h4>
+                                        <p class="text-sm text-slate-500">Most basic. Provides fundamental CRUD operations (<code>save()</code>, <code>findById()</code>, etc.).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>PagingAndSortingRepository</code></h4>
+                                        <p class="text-sm text-slate-500">Extends <code>CrudRepository</code>. Adds pagination and sorting capabilities (<code>findAll(Pageable)</code>).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>JpaRepository</code></h4>
+                                        <p class="text-sm text-slate-500">Most comprehensive. Extends both <code>CrudRepository</code> and <code>PagingAndSortingRepository</code>. Adds JPA-specific features (batch operations, flushing).</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Simply extending <code>JpaRepository</code> generates numerous data access methods, decoupling business from persistence layers.</p>
+                            </div>
+                        `
+                    },
+                    queries: {
+                        title: 'Query Methods',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Defining Queries in Spring Data JPA</h3>
+                                <p class="mt-2 text-slate-600">Flexible ways to define queries, from automatic generation to explicit JPQL or native SQL.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Derived Query Methods</h4>
+                                        <p class="text-sm text-slate-500">Spring automatically generates SQL based on method names (e.g., <code>findByNameAndEmail(String name, String email)</code>). Supports many keywords like <code>And</code>, <code>Or</code>, <code>Like</code>.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Custom Queries with <code>@Query</code></h4>
+                                        <p class="text-sm text-slate-500">For complex queries. Supports:</p>
+                                        <ul class="list-disc list-inside text-slate-600 ml-4 mt-2">
+                                            <li><strong>JPQL (Java Persistence Query Language):</strong> Object-oriented, database-agnostic queries (e.g., <code>@Query("SELECT u FROM User u WHERE u.email = :email")</code>).</li>
+                                            <li><strong>Native SQL Queries:</strong> For database-specific features or performance (<code>@Query(nativeQuery = true, value = "SELECT * FROM users")</code>).</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Balances development speed with fine-grained control over data access.</p>
+                            </div>
+                        `
+                    },
+                    pagination: {
+                        title: 'Pagination & Sorting',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Efficient Data Handling</h3>
+                                <p class="mt-2 text-slate-600">Essential for large datasets to prevent performance issues. Spring Data JPA simplifies this.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>Pageable</code> Object</h4>
+                                        <p class="text-sm text-slate-500">Passed to repository methods (e.g., <code>PageRequest.of(pageNumber, pageSize, Sort.by("propertyName"))</code>). Encapsulates page number, size, and sorting.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>Page</code> Object</h4>
+                                        <p class="text-sm text-slate-500">Returned by repository methods (e.g., <code>Page<User></code>). Provides content, current page number, total pages, total elements.</p>
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-lg mt-4">Benefits:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li><strong>Performance Optimization:</strong> Reduces memory footprint and network transfer.</li>
+                                    <li><strong>Improved User Experience:</strong> Makes large datasets digestible.</li>
+                                </ul>
+                            </div>
+                        `
+                    },
+                    transactions: {
+                        title: 'Transaction Management',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Ensuring Data Integrity</h3>
+                                <p class="mt-2 text-slate-600">A transaction is an indivisible unit of work. All operations succeed or all are rolled back. Spring provides declarative transaction management.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@Transactional</code> Annotation</h4>
+                                        <p class="text-sm text-slate-500">Can be applied at class or method level. Spring AOP intercepts calls, initiates a transaction, and commits on success or rolls back on unchecked exceptions.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Auto-Configuration</h4>
+                                        <p class="text-sm text-slate-500"><code>spring-boot-starter-data-jpa</code> automatically configures transaction management.</p>
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-lg mt-4">Benefits:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li><strong>Data Reliability and Consistency:</strong> Prevents partial updates.</li>
+                                    <li><strong>Simplified Development:</strong> Abstracts boilerplate for transaction demarcation.</li>
+                                </ul>
+                            </div>
+                        `
+                    },
+                    auditing: {
+                        title: 'Auditing',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Tracking Data Changes</h3>
+                                <p class="mt-2 text-slate-600">Automates tracking who created/modified an entity and when. Essential for debugging, compliance, and historical records.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@EnableJpaAuditing</code></h4>
+                                        <p class="text-sm text-slate-500">Activates Spring Data JPA's auditing capabilities (on main application class).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Auditing Annotations</h4>
+                                        <ul class="list-disc list-inside text-slate-600 ml-4 mt-2">
+                                            <li><code>@CreatedDate</code>: Populates creation timestamp.</li>
+                                            <li><code>@LastModifiedDate</code>: Updates timestamp on modification.</li>
+                                            <li><code>@CreatedBy</code>: Populates user who created (requires \`AuditorAware\` bean).</li>
+                                            <li><code>@LastModifiedBy</code>: Populates user who last modified (requires \`AuditorAware\` bean).</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Reduces boilerplate, ensures consistency, enhances data governance.</p>
+                            </div>
+                        `
+                    },
+                    performance: {
+                        title: 'Performance Optimization',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Optimizing JPA Performance</h3>
+                                <p class="mt-2 text-slate-600">Strategies to enhance performance, especially with database interactions.</p>
+                                <h4 class="font-semibold text-lg mt-4">N+1 Query Problem & Solutions:</h4>
+                                <p class="mt-2 text-slate-600">Occurs when fetching a parent collection (1 query) then N separate queries for children. Solutions:</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="tab-buttons flex flex-wrap gap-2 mb-4">
+                                        <button class="tab-button active" data-tab="join-fetch">JOIN FETCH</button>
+                                        <button class="tab-button" data-tab="entity-graph">@EntityGraph</button>
+                                        <button class="tab-button" data-tab="batch-size">@BatchSize</button>
+                                        <button class="tab-button" data-tab="subselect">@Fetch(SUBSELECT)</button>
+                                    </div>
+                                    <div id="jpa-tabs-content">
+                                        <div class="tab-content" id="join-fetch-content">
+                                            <h5 class="font-semibold text-md text-slate-700"><code>JOIN FETCH</code></h5>
+                                            <p class="text-slate-600 mt-1">Fetches related entities in a single SQL <code>JOIN</code> query. Efficient for loading all related data without pagination.</p>
+                                        </div>
+                                        <div class="tab-content hidden" id="entity-graph-content">
+                                            <h5 class="font-semibold text-md text-slate-700"><code>@EntityGraph</code></h5>
+                                            <p class="text-slate-600 mt-1">Automatic optimization for fetching associations. Generates optimized queries (often <code>LEFT JOIN</code>). Compatible with pagination.</p>
+                                        </div>
+                                        <div class="tab-content hidden" id="batch-size-content">
+                                            <h5 class="font-semibold text-md text-slate-700"><code>@BatchSize</code></h5>
+                                            <p class="text-slate-600 mt-1">Hibernate-specific. Optimizes lazy loading by grouping multiple queries into a single batch, reducing DB hits.</p>
+                                        </div>
+                                        <div class="tab-content hidden" id="subselect-content">
+                                            <h5 class="font-semibold text-md text-slate-700"><code>@Fetch(FetchMode.SUBSELECT)</code></h5>
+                                            <p class="text-slate-600 mt-1">Hibernate-specific. Executes one query for parents, then a single subselect for all associated children.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-lg mt-6">Other Optimization Strategies:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li><strong>Caching:</strong> Store frequently accessed data in memory (<code>@Cacheable</code>, Ehcache, Caffeine).</li>
+                                    <li><strong>Indexing:</strong> Proper database indexing on frequently queried columns.</li>
+                                    <li><strong>Query Optimization:</strong> Write efficient JPQL/Criteria queries, use DTO projections.</li>
+                                    <li><strong>Read-Only Operations:</strong> Use <code>@Transactional(readOnly = true)</code> for read-only methods.</li>
+                                </ul>
+                            </div>
+                        `
+                    },
+                    pitfalls: {
+                        title: 'Common Pitfalls & Tips',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Common Pitfalls and Troubleshooting Tips (JPA)</h3>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2 mt-4">
+                                    <li><strong>N+1 Query Problem:</strong> Monitor SQL logs. Use \`JOIN FETCH\`, \`@EntityGraph\`, \`@BatchSize\`.</li>
+                                    <li><strong>Misuse of Eager Fetching:</strong> Favor \`FetchType.LAZY\`. Use explicit fetching only when needed.</li>
+                                    <li><strong>Incorrect Primary Key Strategy:</strong> Choose \`GenerationType\` based on database and scaling needs.</li>
+                                    <li><strong>Unnecessary \`saveAndFlush()\`:\` Understand JPA's auto-flush. Avoid unless immediate sync is required.</li>
+                                    <li><strong>Lack of Caching:</strong> Implement Spring Cache. Tune cache sizes.</li>
+                                    <li><strong>Inefficient Custom Queries:</strong> Write precise queries. Use DTO projections.</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Proactive monitoring and detailed logging are crucial for diagnosing performance bottlenecks.</p>
+                            </div>
+                        `
+                    }
+                }
+            },
+            security: {
+                title: 'Spring Security for Application Protection',
+                intro: 'Spring Security is a powerful and highly customizable framework providing robust authentication and authorization for Spring applications, crucial for protecting sensitive data and ensuring secure access.',
+                subsections: {
+                    auth_vs_authz: {
+                        title: 'Authentication vs. Authorization',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Core Concepts and Differences</h3>
+                                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Authentication</h4>
+                                        <p class="text-sm text-slate-500">Verifying *who* a user claims to be (identity verification). Occurs first. E.g., username/password login.</p>
+                                        <p class="text-sm text-slate-500 mt-2">Types: Single-Factor (SFA), Two-Factor (2FA), Multi-Factor (MFA).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg">Authorization</h4>
+                                        <p class="text-sm text-slate-500">Determining *what* an *authenticated* user is permitted to do or access. Occurs after authentication. E.g., checking user roles for access to a specific page.</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Distinction is fundamental for designing secure applications.</p>
+                            </div>
+                        `
+                    },
+                    architecture: {
+                        title: 'Architecture & Filter Chain',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Spring Security Architecture</h3>
+                                <p class="mt-2 text-slate-600">Operates primarily through a sophisticated filter chain, intercepting HTTP requests before they reach application logic.</p>
+                                <h4 class="font-semibold text-lg mt-4">Filter Chain:</h4>
+                                <p class="mt-2 text-slate-600">Requests pass through a series of security filters. Each filter performs a specific security check (e.g., \`AuthenticationFilter\`, \`CsrfFilter\`). If all checks pass, request proceeds to controller; otherwise, it's halted.</p>
+                                <p class="mt-2 text-slate-600">The \`FilterChainProxy$VirtualFilterChain\` manages filter execution order. Highly customizable via \`HttpSecurity\`.</p>
+                                <p class="mt-4 text-slate-600">This modular, layered approach ensures consistent and centralized handling of security concerns.</p>
+                            </div>
+                        `
+                    },
+                    components: {
+                        title: 'Key Components',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Core Spring Security Components</h3>
+                                <p class="mt-2 text-slate-600">Modular architecture relies on these components to manage authentication and authorization.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>AuthenticationManager</code></h4>
+                                        <p class="text-sm text-slate-500">Orchestrates authentication, delegates to \`AuthenticationProvider\`s.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>AuthenticationProvider</code></h4>
+                                        <p class="text-sm text-slate-500">Contains core logic for authenticating against a specific data source (e.g., \`DaoAuthenticationProvider\`).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>UserDetailsService</code></h4>
+                                        <p class="text-sm text-slate-500">Retrieves user-specific data (username, password, roles) from a data source.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>PasswordEncoder</code></h4>
+                                        <p class="text-sm text-slate-500">Crucial for secure password storage and verification (hashing).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>SecurityContext</code></h4>
+                                        <p class="text-sm text-slate-500">Stores the \`Authentication\` object (authenticated user's details) in a thread-local, managed by \`SecurityContextHolder\`.</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Pliable nature allows significant customization for diverse requirements.</p>
+                            </div>
+                        `
+                    },
+                    login_forms: {
+                        title: 'Customizing Login Forms',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Replacing Default Login Pages</h3>
+                                <p class="mt-2 text-slate-600">Spring Security allows replacing its default login page with a custom one for branding or additional fields.</p>
+                                <h4 class="font-semibold text-lg mt-4">Process:</h4>
+                                <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-2">
+                                    <li>Create a custom HTML/JSP login page.</li>
+                                    <li>Configure Spring Security to point to the custom login page (e.g., \`.formLogin().loginPage("/custom-login")\`).</li>
+                                    <li>Custom form's \`action\` points to Spring Security's default login processing URL (e.g., \`/login\`).</li>
+                                    <li>Integrate with Spring MVC controller to render the custom login page if it's a JSP.</li>
+                                </ol>
+                                <p class="mt-4 text-slate-600">Balances convenient defaults with extensive flexibility for UI/UX.</p>
+                            </div>
+                        `
+                    },
+                    jwt: {
+                        title: 'Token-Based Auth: JWT',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">JSON Web Tokens (JWT)</h3>
+                                <p class="mt-2 text-slate-600">Popular for token-based authentication in modern web applications and microservices. Key characteristic: <strong>statelessness</strong>.</p>
+                                <h4 class="font-semibold text-lg mt-4">JWT Flow:</h4>
+                                <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-2">
+                                    <li>User authenticates with application.</li>
+                                    <li>Server generates a signed JWT with claims.</li>
+                                    <li>JWT sent to client.</li>
+                                    <li>Client includes JWT in \`Authorization\` header for subsequent requests.</li>
+                                    <li>Server validates JWT signature and expiration.</li>
+                                    <li>If valid, user details from token populate \`SecurityContext\`.</li>
+                                </ol>
+                                <p class="mt-4 text-slate-600">Improves scalability and resilience in distributed architectures.</p>
+                            </div>
+                        `
+                    },
+                    oauth2: {
+                        title: 'OAuth2 Integration',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Open Authorization 2.0</h3>
+                                <p class="mt-2 text-slate-600">An authorization framework (not authentication) enabling applications to obtain *limited access* to user accounts on HTTP services (e.g., Google, Facebook) without sharing credentials.</p>
+                                <h4 class="font-semibold text-lg mt-4">Key Roles:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li>Resource Owner: The user.</li>
+                                    <li>Client: The application requesting access.</li>
+                                    <li>Authorization Server: Authenticates user, issues access tokens.</li>
+                                    <li>Resource Server: Hosts protected resources, accepts access tokens.</li>
+                                </ul>
+                                <h4 class="font-semibold text-lg mt-4">Common Grant Types:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li>Authorization Code Grant (most common for server-side apps)</li>
+                                    <li>Implicit Grant (less secure, for client-side)</li>
+                                    <li>Resource Owner Password Credentials Grant (discouraged)</li>
+                                    <li>Client Credentials Grant (machine-to-machine)</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Fundamental for integrating with external services or SSO.</p>
+                            </div>
+                        `
+                    },
+                    method_security: {
+                        title: 'Method-Level Security',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Finer-Grained Access Control</h3>
+                                <p class="mt-2 text-slate-600">Complements URL-based security. Applies security constraints directly to individual methods, classes, or interfaces using SpEL expressions.</p>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@PreAuthorize</code></h4>
+                                        <p class="text-sm text-slate-500">Evaluates SpEL *before* method invocation. If \`false\`, \`AccessDeniedException\` is thrown. Highly flexible (e.g., \`hasRole('ADMIN')\`, \`hasPermission(#id, 'read')\`).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h4 class="font-bold text-lg"><code>@PostAuthorize</code></h4>
+                                        <p class="text-sm text-slate-500">Evaluates SpEL *after* method invocation, *before* result is returned. Allows authorization based on return value (e.g., user is owner of object).</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600">Crucial for implementing object-level security and preventing authorization flaws.</p>
+                            </div>
+                        `
+                    },
+                    csrf: {
+                        title: 'CSRF Protection',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Cross-Site Request Forgery Protection</h3>
+                                <p class="mt-2 text-slate-600">Protects against malicious websites tricking browsers into submitting unintended requests to trusted sites. Enabled by default for "unsafe" HTTP methods (POST, PUT, DELETE).</p>
+                                <h4 class="font-semibold text-lg mt-4">Mechanism:</h4>
+                                <ol class="list-decimal list-inside text-slate-600 mt-2 space-y-2">
+                                    <li>Spring generates a unique \`CsrfToken\` for each user session.</li>
+                                    <li>Client includes this \`CsrfToken\` in requests (hidden form field or custom HTTP header like \`X-XSRF-TOKEN\`).</li>
+                                    <li>Spring Security's CSRF filter compares client token with stored token.</li>
+                                    <li>If tokens don't match, request is rejected with \`AccessDeniedException\`.</li>
+                                </ol>
+                                <p class="mt-4 text-slate-600">Proactively mitigates a common web vulnerability, aligning with secure-by-default configurations.</p>
+                            </div>
+                        `
+                    },
+                    pitfalls: {
+                        title: 'Common Pitfalls & Tips',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Common Pitfalls and Troubleshooting Tips (Security)</h3>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2 mt-4">
+                                    <li><strong>"Bad Credentials" Error:</strong> Review debug logs, verify password encoding.</li>
+                                    <li><strong>"Endless Loop" on Login:</strong> Check security filter config, redirect URLs, session management.</li>
+                                    <li><strong>"Access is denied" / 403 Forbidden:</strong> Verify authentication/authorization. For POST/PUT/DELETE, check CSRF token.</li>
+                                    <li><strong>\`Authentication\` object \`null\`:</strong> Ensure authentication success, session validity, \`SecurityContext\` population.</li>
+                                    <li><strong>Overly Permissive Endpoints:</strong> Review \`@PermitAll\` and broad URL patterns. Apply "least privilege."</li>
+                                    <li><strong>Inconsistent Role/Permission Checks:</strong> Apply authorization consistently across layers.</li>
+                                    <li><strong>Unvalidated Client-Side Tokens/Roles:</strong> Always validate JWT signature and claims on server-side.</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Proactive, layered security approach with vigilance, reviews, and effective logging is essential.</p>
+                            </div>
+                        `
+                    }
+                }
+            },
+            testing: {
+                title: 'Testing Spring Applications',
+                intro: 'Testing is fundamental for ensuring applications behave as expected. Spring provides a comprehensive testing framework supporting various levels, from isolated unit tests to full end-to-end scenarios.',
+                subsections: {
+                    unit: {
+                        title: 'Unit Testing',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Isolated Component Verification</h3>
+                                <p class="mt-2 text-slate-600">Unit tests verify individual components (methods/classes) in isolation from dependencies. They should be fast, independent, repeatable, self-validating, and timely (FIRST principles).</p>
+                                <h4 class="font-semibold text-lg mt-4">Tools: JUnit & Mockito</h4>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h5 class="font-bold text-md">JUnit</h5>
+                                        <p class="text-sm text-slate-500">Standard testing framework for Java (<code>@Test</code>, <code>@BeforeEach</code>, assertions).</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h5 class="font-bold text-md">Mockito</h5>
+                                        <p class="text-sm text-slate-500">Mocking framework for creating "test doubles" for dependencies, isolating the unit under test.</p>
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-lg mt-4">Spring Boot Mocking Annotations:</h4>
+                                <div class="mt-4 space-y-4">
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h5 class="font-bold text-md"><code>@MockBean</code></h5>
+                                        <p class="text-sm text-slate-500">Creates a Mockito mock and replaces a real bean in the Spring context. Ideal for complete isolation. Uses \`REPLACE_OR_CREATE\` strategy.</p>
+                                    </div>
+                                    <div class="border border-slate-200 p-4 rounded-lg">
+                                        <h5 class="font-bold text-md"><code>@SpyBean</code></h5>
+                                        <p class="text-sm text-slate-500">Creates a Mockito spy of an *existing* bean. Retains original behavior but allows specific methods to be stubbed/verified. Uses \`WRAP\` strategy.</p>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-slate-600"><strong>Best Practices:</strong> Isolate functionality, write readable tests, test edge cases, use constructor injection, avoid testing framework code.</p>
+                            </div>
+                        `
+                    },
+                    integration: {
+                        title: 'Integration Testing',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Verifying Component Interactions</h3>
+                                <p class="mt-2 text-slate-600">Integration tests verify interactions between multiple components/modules, often across layers. Spring Boot provides specialized annotations to load only necessary parts of the context.</p>
+                                <h4 class="font-semibold text-lg mt-4">Spring Boot Testing Annotations:</h4>
+                                <div class="chart-container mt-4"><canvas id="testing-chart"></canvas></div>
+                                <p class="mt-4 text-slate-600"><strong>Testcontainers:</strong> Powerful open-source library providing throwaway Docker instances of external systems (databases, message brokers) for realistic integration testing. Ensures "dev-prod parity."</p>
+                            </div>
+                        `
+                    },
+                    e2e: {
+                        title: 'End-to-End Testing',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Simulating Real User Scenarios</h3>
+                                <p class="mt-2 text-slate-600">Highest level of testing, verifying the entire application from start to finish through its external interfaces (UI, backend, database). Ensures all integrated components function correctly as a complete system.</p>
+                                <h4 class="font-semibold text-lg mt-4">Common Tools & Strategies:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li><strong>Selenium:</strong> For web applications with GUI, automates browser interaction.</li>
+                                    <li><strong>REST Assured/HttpClient:</strong> For RESTful APIs, sends HTTP requests and validates responses.</li>
+                                    <li><strong>Testcontainers:</strong> Provides reliable, ephemeral instances of all external dependencies.</li>
+                                    <li><strong>Cucumber/Gherkin:</strong> For Behavior-Driven Development (BDD), defining scenarios in human-readable format.</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Catches integration issues and user-flow problems missed by lower-level tests. \`@SpringBootTest\` is often the starting point.</p>
+                            </div>
+                        `
+                    },
+                    test_context: {
+                        title: 'Spring TestContext Framework',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Underlying Testing Infrastructure</h3>
+                                <p class="mt-2 text-slate-600">Core component (\`org.springframework.test.context\`) providing generic, annotation-driven unit and integration testing support. Agnostic of specific testing frameworks (JUnit, TestNG).</p>
+                                <h4 class="font-semibold text-lg mt-4">Key Functionalities:</h4>
+                                <ul class="list-disc list-inside text-slate-600 mt-2 space-y-2">
+                                    <li><strong>Context Management:</strong> Loads and caches Spring \`ApplicationContext\` for tests.</li>
+                                    <li><strong>Dependency Injection:</strong> Automatically injects dependencies into test classes.</li>
+                                    <li><strong>Transaction Management:</strong> Supports transactional tests, automatic rollback after each test.</li>
+                                    <li><strong>Executing SQL Scripts:</strong> Can set up/clean up test data.</li>
+                                    <li><strong>POJO Test Classes:</strong> Enables writing tests without extending specific Spring base classes (uses \`@ExtendWith(SpringExtension.class)\`).</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Powers Spring Boot testing annotations, providing a robust foundation for efficient and reliable testing.</p>
+                            </div>
+                        `
+                    },
+                    pitfalls: {
+                        title: 'Best Practices & Pitfalls',
+                        content: `
+                            <div class="content-card p-6">
+                                <h3 class="text-xl font-semibold text-blue-600">Best Practices and Common Pitfalls (Testing)</h3>
+                                <h4 class="font-semibold text-lg mt-4">Best Practices:</h4>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2 mt-2">
+                                    <li><strong>Keep Tests Isolated (FIRST):</strong> Fast, Independent, Repeatable, Self-Validating, Timely.</li>
+                                    <li><strong>Isolate Functionality:</strong> Use context slicing (\`@WebMvcTest\`, \`@DataJpaTest\`).</li>
+                                    <li><strong>Use Real DBs with Testcontainers:</strong> For "dev-prod parity."</li>
+                                    <li><strong>Mock External Dependencies:</strong> Use Mockito (\`@MockBean\`, \`@SpyBean\`).</li>
+                                    <li><strong>Write Readable Tests:</strong> Clear, concise, easy to debug/update.</li>
+                                    <li><strong>Test Edge Cases:</strong> Cover boundary conditions, invalid inputs, error paths.</li>
+                                    <li><strong>Integrate into CI/CD:</strong> Automated execution to prevent regressions.</li>
+                                    <li><strong>Don't Test Framework Code:</strong> Focus on custom business logic.</li>
+                                </ul>
+                                <h4 class="font-semibold text-lg mt-4">Common Pitfalls:</h4>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2 mt-2">
+                                    <li><strong>Over-reliance on \`@SpringBootTest\`:</strong> Leads to slow suites.</li>
+                                    <li><strong>Inconsistent DB State:</strong> Use \`@Transactional\` or explicit cleanup.</li>
+                                    <li><strong>Not Mocking External Systems:</strong> Makes tests slow, flaky.</li>
+                                    <li><strong>Testing Trivial Logic:</strong> Adds overhead without value.</li>
+                                    <li><strong>Circular Dependencies:</strong> Can complicate testing.</li>
+                                </ul>
+                                <p class="mt-4 text-slate-600">Adhering to practices and understanding pitfalls improves test suite efficiency and reliability.</p>
+                            </div>
+                        `
+                    }
+                }
+            }
+        };
+
+        let mainNav;
+        let subNavContainer;
+        let contentContainer;
+        let welcomeMessage;
+
+        let currentTopic = '';
+        let currentSubSection = '';
+
+        function renderSubNav(topicKey) {
+            const topic = contentData[topicKey];
+            if (!topic) {
+                subNavContainer.innerHTML = '';
+                return;
+            }
+
+            let subNavHtml = `<div class="bg-white rounded-lg shadow-md p-4 sticky top-[148px]">
+                                <h3 class="text-lg font-bold text-slate-700 mb-3">${topic.title}</h3>
+                                <nav class="flex flex-col space-y-1">`;
+            for (const subKey in topic.subsections) {
+                subNavHtml += `<button data-topic="${topicKey}" data-subsection="${subKey}" class="sub-nav-btn px-3 py-2 rounded-md text-left text-slate-700 hover:bg-slate-100">${topic.subsections[subKey].title}</button>`;
+            }
+            subNavHtml += `</nav></div>`;
+            subNavContainer.innerHTML = subNavHtml;
+
+            subNavContainer.querySelectorAll('.sub-nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const topic = e.target.dataset.topic;
+                    const subsection = e.target.dataset.subsection;
+                    loadContent(topic, subsection);
+                });
+            });
+        }
+
+        function loadContent(topicKey, subSectionKey) {
+            currentTopic = topicKey;
+            currentSubSection = subSectionKey;
+
+            welcomeMessage.classList.add('hidden');
+            const topic = contentData[topicKey];
+            const subsection = topic.subsections[subSectionKey];
+
+            let contentHtml = `<div class="mb-6">
+                                <h2 class="text-2xl md:text-3xl font-bold text-slate-800">${topic.title}</h2>
+                                <p class="mt-2 text-slate-600">${topic.intro}</p>
+                                <h3 class="text-xl md:text-2xl font-semibold text-blue-700 mt-4">${subsection.title}</h3>
+                                <div class="mt-4">${subsection.content}</div>
+                               </div>`;
+            contentContainer.innerHTML = contentHtml;
+
+            // Update active states
+            mainNav.querySelectorAll('.main-nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.topic === topicKey) {
+                    btn.classList.add('active');
+                }
+            });
+            subNavContainer.querySelectorAll('.sub-nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.subsection === subSectionKey) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Re-initialize charts if they exist in the loaded content
+            if (subSectionKey === 'ioc') {
+                renderIocChart();
+            } else {
+                if (iocChartInstance) {
+                    iocChartInstance.destroy();
+                    iocChartInstance = null;
+                }
+            }
+
+            if (subSectionKey === 'integration') {
+                renderTestingChart();
+            } else {
+                if (testingChartInstance) {
+                    testingChartInstance.destroy();
+                    testingChartInstance = null;
+                }
+            }
+
+            // Add event listeners for accordions
+            contentContainer.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        header.querySelector('span').textContent = '+';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        header.querySelector('span').textContent = '-';
+                    }
+                });
+            });
+
+            // Add event listeners for flow steps (MVC DispatcherServlet Flow)
+            contentContainer.querySelectorAll('.flow-step').forEach(step => {
+                step.addEventListener('click', () => {
+                    const detail = step.querySelector('.flow-step-detail');
+                    if (detail.classList.contains('active')) {
+                        detail.classList.remove('active');
+                        detail.style.maxHeight = null;
+                    } else {
+                        // Close other open details in the same flow
+                        contentContainer.querySelectorAll('.flow-step-detail.active').forEach(openDetail => {
+                            openDetail.classList.remove('active');
+                            openDetail.style.maxHeight = null;
+                        });
+                        detail.classList.add('active');
+                        detail.style.maxHeight = detail.scrollHeight + "px";
+                    }
+                });
+            });
+
+            // Add event listeners for JPA performance tabs
+            contentContainer.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+                    contentContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    contentContainer.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                    document.getElementById(`${tabId}-content`).classList.remove('hidden');
+                });
+            });
+        }
+
+        function renderIocChart() {
+            const ctx = document.getElementById('ioc-chart');
+            if (ctx) {
+                if (iocChartInstance) {
+                    iocChartInstance.destroy();
+                }
+                iocChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Basic DI', 'Bean Lifecycle', 'AOP Integration', 'Event Handling', 'Internationalization', 'Annotation Support', 'Resource Loading'],
+                        datasets: [
+                            {
+                                label: 'BeanFactory',
+                                data: [1, 1, 0, 0, 0, 0, 0], // 1 for basic, 0 for advanced
+                                backgroundColor: '#60a5fa', // blue-400
+                                borderColor: '#3b82f6', // blue-500
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'ApplicationContext',
+                                data: [1, 1, 1, 1, 1, 1, 1], // 1 for all features
+                                backgroundColor: '#10b981', // emerald-500
+                                borderColor: '#059669', // emerald-600
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        const label = context[0].label;
+                                        // Wrap long labels
+                                        if (label.length > 16 && label.indexOf(' ') !== -1) {
+                                            return label.split(' ').join('\n');
+                                        }
+                                        return label;
+                                    },
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.raw === 1 ? 'Supported' : 'Not Supported';
+                                        return label;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'IoC Container Feature Comparison'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: false,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        const label = this.getLabelForValue(value);
+                                        // Wrap labels if they are too long
+                                        if (label.length > 16 && label.indexOf(' ') !== -1) {
+                                            return label.split(' ');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            },
+                            y: {
+                                stacked: false,
+                                beginAtZero: true,
+                                max: 1.2,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return value === 1 ? 'Yes' : 'No';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderTestingChart() {
+            const ctx = document.getElementById('testing-chart');
+            if (ctx) {
+                if (testingChartInstance) {
+                    testingChartInstance.destroy();
+                }
+                testingChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['@SpringBootTest', '@WebMvcTest', '@DataJpaTest'],
+                        datasets: [
+                            {
+                                label: 'Context Loaded Scope',
+                                data: [3, 2, 1], // 3 for full, 2 for web, 1 for JPA
+                                backgroundColor: ['#3b82f6', '#10b981', '#ef4444'], // blue, emerald, red
+                                borderColor: ['#2563eb', '#059669', '#dc2626'],
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.raw === 3) return label + 'Entire Application Context';
+                                        if (context.raw === 2) return label + 'Web-related Components Only';
+                                        if (context.raw === 1) return label + 'JPA-related Components Only';
+                                        return label + context.raw;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false,
+                            },
+                            title: {
+                                display: true,
+                                text: 'Spring Boot Testing Annotation Context Scope'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        const label = this.getLabelForValue(value);
+                                        if (label.length > 16 && label.indexOf(' ') !== -1) {
+                                            return label.split(' ');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            },
+                            y: {
+                                display: false, // Hide y-axis for cleaner look
+                                beginAtZero: true,
+                                max: 3.5
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize with Core topic selected by default on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            mainNav = document.getElementById('main-nav');
+            subNavContainer = document.getElementById('sub-nav-container');
+            contentContainer = document.getElementById('content-container');
+            welcomeMessage = document.getElementById('welcome-message');
+
+            mainNav.querySelectorAll('.main-nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const topicKey = e.target.dataset.topic;
+                    renderSubNav(topicKey);
+                    // Load the first subsection by default for the selected topic
+                    const firstSubSectionKey = Object.keys(contentData[topicKey].subsections)[0];
+                    loadContent(topicKey, firstSubSectionKey);
+                });
+            });
+
+            const defaultTopic = 'core';
+            renderSubNav(defaultTopic);
+            const firstSubSectionKey = Object.keys(contentData[defaultTopic].subsections)[0];
+            loadContent(defaultTopic, firstSubSectionKey);
+        });
+    </script>
+</body>
+</html>
